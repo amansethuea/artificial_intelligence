@@ -1,6 +1,9 @@
 import math
+import os
 import random
 import time
+import csv
+import numpy as np
 
 
 class Iddfs(object):
@@ -14,6 +17,8 @@ class Iddfs(object):
         self.DOWN = 'down'
         self.LEFT = 'left'
         self.RIGHT = 'right'
+        self.nodes_explored = []
+        self.solution_found = 0
 
     def random_states_generator(self, n):
         random.seed(755)
@@ -148,6 +153,7 @@ class Iddfs(object):
             # Make the move:
             self.make_move(board, move)
             moves_made.append(move)
+            self.nodes_explored.append(move)
 
             if self.attempt_move(board, moves_made, moves_remaining - 1, move, goal_state):
                 # If the puzzle is solved, return True:
@@ -159,7 +165,7 @@ class Iddfs(object):
             moves_made.pop()  # Remove the last move since it was undone.
         return False  # BASE CASE - Unable to find a solution.
 
-    def solve_puzzle(self, start_state=dict, goal_state=None):
+    def solve_puzzle(self, start_state=dict, goal_state=None, file_name='IDDFS_output.csv'):
         if isinstance(start_state, list):
             puzzle_board = ([item for sublist in start_state[2] for item in sublist])
             start_time = time.time()
@@ -174,26 +180,59 @@ class Iddfs(object):
                         print(f"Unable to solve the puzzle in {moves} moves. Proceeding with next state")
                         break
             print('Run in', round(time.time() - start_time, 3), 'seconds.')
+            print(f"Nodes Explored: {len(self.nodes_explored)}")
         else:
             start_states_dict = self.get_random_states()
             goal_state_list = ([item for sublist in self.goal_state[2] for item in sublist])
             for k, v in start_states_dict.items():
+                final_state_list = []
+                blank_tile_index = np.where(np.array(v) == 0)
+                row, column = blank_tile_index[0][0], blank_tile_index[1][0]
+                final_state_list.append(row)
+                final_state_list.append(column)
+                final_state_list.append(v)
+                self.nodes_explored = []
                 puzzle_board = ([item for sublist in v for item in sublist])
                 start_time = time.time()
                 moves = 1
                 while True:
                     if self.solve(puzzle_board, max_move=moves, goal_state=goal_state_list):
+                        self.solution_found = 1
                         break  # Break out of the loop when a solution is found.
                     else:
+                        self.solution_found = 0
                         moves += 1
                         if moves > 30:
                             print(f"Unable to solve the puzzle in {moves} moves. Proceeding with next state")
                             break
                 print('Run in', round(time.time() - start_time, 3), 'seconds.')
+                print(f"Nodes Explored: {len(self.nodes_explored)}")
+                self.write_csv_data(file_name, k, final_state_list, self.solution_found, moves,
+                                    int(len(self.nodes_explored))/8, str(round(time.time() - start_time, 3)) + "s")
+
+    def write_csv_data(self, file_name, case_no, case_start_state, solution_found, no_of_moves, nodes_opened,
+                       computing_time):
+        with open(file_name, 'a', newline='') as csvfile:
+            fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves', 'No. of Nodes opened',
+                          'Computing Time']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            is_file_empty = os.stat(file_name).st_size
+            if is_file_empty == 0:
+                writer.writeheader()
+            writer.writerow({'Case Number': case_no, 'Case Start State': case_start_state,
+                             'Solution Found': solution_found, 'No. of moves': no_of_moves,
+                             'No. of Nodes opened': nodes_opened, 'Computing Time': computing_time})
+            csvfile.close()
+
+    def clear_csv(self, file_name):
+        fo = open(file_name, "w")
+        fo.writelines("")
+        fo.close()
 
 
 if __name__ == "__main__":
     obj = Iddfs()
-    # obj.solve_puzzle(start_state=[2, 2, [[4, 7, 5], [3, 8, 1], [6, 2, 0]]],
-    #                goal_state=[1, 1, [[1, 2, 3], [8, 0, 4], [7, 6, 5]]])
+    obj.clear_csv("IDDFS_output.csv")
+    #obj.solve_puzzle(start_state=[2, 2, [[4, 7, 5], [3, 8, 1], [6, 2, 0]]],
+    #                 goal_state=[1, 1, [[1, 2, 3], [8, 0, 4], [7, 6, 5]]])
     obj.solve_puzzle()
