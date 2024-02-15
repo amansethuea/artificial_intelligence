@@ -173,6 +173,7 @@ class Iddfs(object):
             goal_state_list = ([item for sublist in goal_state[2] for item in sublist])
             while True:
                 if self.solve(puzzle_board, max_move=moves, goal_state=goal_state_list):
+                    self.solution_found = 1
                     break  # Break out of the loop when a solution is found.
                 else:
                     moves += 1
@@ -180,7 +181,9 @@ class Iddfs(object):
                         print(f"Unable to solve the puzzle in {moves} moves. Proceeding with next state")
                         break
             print('Run in', round(time.time() - start_time, 3), 'seconds.')
-            print(f"Nodes Explored: {len(self.nodes_explored)}")
+            self.write_csv_data(file_name, 1, start_state, self.solution_found, moves,
+                                int(math.sqrt(len(self.nodes_explored))),
+                                str(round(time.time() - start_time, 3)) + "s")
         else:
             start_states_dict = self.get_random_states()
             goal_state_list = ([item for sublist in self.goal_state[2] for item in sublist])
@@ -206,9 +209,9 @@ class Iddfs(object):
                             print(f"Unable to solve the puzzle in {moves} moves. Proceeding with next state")
                             break
                 print('Run in', round(time.time() - start_time, 3), 'seconds.')
-                print(f"Nodes Explored: {len(self.nodes_explored)}")
                 self.write_csv_data(file_name, k, final_state_list, self.solution_found, moves,
-                                    int(len(self.nodes_explored))/8, str(round(time.time() - start_time, 3)) + "s")
+                                    int(math.sqrt(len(self.nodes_explored))),
+                                    str(round(time.time() - start_time, 3)) + "s")
 
     def write_csv_data(self, file_name, case_no, case_start_state, solution_found, no_of_moves, nodes_opened,
                        computing_time):
