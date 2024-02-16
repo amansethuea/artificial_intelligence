@@ -11,10 +11,12 @@ GOAL_STATE = [[]]
 GLOBAL_STATE_DICT = {}
 N = 0
 nodes_explored = []
+solution_found = 0
+gn = 0
 
 no_of_tiles = 8
 initial_state = list(reversed(range(no_of_tiles + 1)))
-goal_state = [1, 1, [[1, 2, 3], [8, 0, 4], [7, 6, 5]]]
+g_state = [1, 1, [[1, 2, 3], [8, 0, 4], [7, 6, 5]]]
 matrix = int(math.sqrt(no_of_tiles + 1))
 
 
@@ -77,11 +79,12 @@ def manhattan_heuristic(state):
 
 
 def search(path, g, threshold):
+    global gn
+
     node = list(path.keys())[-1]
-
     f = g + node.heuristic
-
     if g > 30:
+        gn = g
         return False
 
     if f > threshold:
@@ -149,50 +152,132 @@ def get_random_states():
     return state_dict
 
 
-def define_goal_state():
-    global GOAL_STATE
-    global N
-    global GLOBAL_STATE_DICT
-    global goal_state
-
-    GOAL_STATE = np.array(goal_state[2])
-    goal_state_list = goal_state[2]
-    print("GOAL STATE")
-    print(GOAL_STATE)
-    N = len(GOAL_STATE)
-    GLOBAL_STATE_DICT = {goal_state_list[r][c]: (r, c) for r in range(N) for c in range(N)}
+def clear_csv(file_name):
+    fo = open(file_name, "w")
+    fo.writelines("")
+    fo.close()
 
 
 def solve_puzzle(start_state=dict, goal_state=None, filename="IDASTAR_output.csv"):
-    start_states = get_random_states()
-    for k, v in start_states.items():
-        puzzle = np.array(v)
+    global GOAL_STATE
+    global N
+    global GLOBAL_STATE_DICT
+    global g_state
+    global nodes_explored
+    global solution_found
+
+    if isinstance(start_state, list):
+        GOAL_STATE = np.array(goal_state[2])
+        goal_state_list = goal_state[2]
+        print("GOAL STATE")
+        print(GOAL_STATE)
+        N = len(GOAL_STATE)
+        GLOBAL_STATE_DICT = {goal_state_list[r][c]: (r, c) for r in range(N) for c in range(N)}
+        puzzle = np.array(start_state[2])
         nodes_explored = []
+
         warnings.filterwarnings('ignore')
-        define_goal_state()
         print('Puzzle:\n', puzzle)
         t0 = pc()
         try:
             path = solve(puzzle)
+            solution_found = 1
             t1 = pc()
-            print(f'State Number {k} depth:{len(path)} runtime:{round(t1 - t0, 3)} s')
+            print(f'State Number 1 depth:{len(path)} runtime:{round(t1 - t0, 3)} s')
             print(f"Nodes Explored: {len(nodes_explored)}")
             print()
             with open(filename, "a", newline='') as csvfile:
                 fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
-                              'No. of Nodes opened',
-                              'Computing Time']
+                              'No. of Nodes opened', 'Computing Time']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                is_file_empty = os.stat("").st_size
-                if is_file_empty:
+                is_file_empty = os.stat(filename).st_size
+                if is_file_empty == 0:
                     writer.writeheader()
-                writer.writerow({'Case Number': "tbd", 'Case Start State': "tbd",
-                                 'Solution Found': "tbd", 'No. of moves': "tbd",
-                                 'No. of Nodes opened': "tbd", 'Computing Time': "tbd"})
+                writer.writerow({'Case Number': 1, 'Case Start State': start_state[2],
+                                 'Solution Found': solution_found, 'No. of moves': len(path),
+                                 'No. of Nodes opened': len(nodes_explored),
+                                 'Computing Time': str(round(t1 - t0, 3)) + 's'})
                 csvfile.close()
         except TypeError:
-            print(f"Unable to solve the puzzle for State Number {k} within 30 moves")
+            print(f"Unable to solve the puzzle for State Number 1 within 30 moves")
+            solution_found = 0
             t1 = pc()
             print(f'Depth: Exceeded 30 moves runtime:{round(t1 - t0, 3)} s')
             print(f"Nodes Explored: {len(nodes_explored)}")
             print()
+            with open(filename, "a", newline='') as csvfile:
+                fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
+                              'No. of Nodes opened', 'Computing Time']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                is_file_empty = os.stat(filename).st_size
+                if is_file_empty == 0:
+                    writer.writeheader()
+                writer.writerow({'Case Number': 1, 'Case Start State': start_state[2],
+                                 'Solution Found': solution_found, 'No. of moves': gn,
+                                 'No. of Nodes opened': len(nodes_explored),
+                                 'Computing Time': str(round(t1 - t0, 3)) + 's'})
+                csvfile.close()
+    else:
+        GOAL_STATE = np.array(g_state[2])
+        goal_state_list = g_state[2]
+        print("GOAL STATE")
+        print(GOAL_STATE)
+        N = len(GOAL_STATE)
+        GLOBAL_STATE_DICT = {goal_state_list[r][c]: (r, c) for r in range(N) for c in range(N)}
+        start_states = get_random_states()
+        for k, v in start_states.items():
+            final_state_list = []
+            blank_tile_index = np.where(np.array(v) == 0)
+            row, column = blank_tile_index[0][0], blank_tile_index[1][0]
+            final_state_list.append(row)
+            final_state_list.append(column)
+            final_state_list.append(v)
+            puzzle = np.array(v)
+            nodes_explored = []
+            warnings.filterwarnings('ignore')
+            print('Puzzle:\n', puzzle)
+            t0 = pc()
+            try:
+                path = solve(puzzle)
+                solution_found = 1
+                t1 = pc()
+                print(f'State Number {k} depth:{len(path)} runtime:{round(t1 - t0, 3)} s')
+                print(f"Nodes Explored: {len(nodes_explored)}")
+                print()
+                with open(filename, "a", newline='') as csvfile:
+                    fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
+                                  'No. of Nodes opened', 'Computing Time']
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    is_file_empty = os.stat(filename).st_size
+                    if is_file_empty == 0:
+                        writer.writeheader()
+                    writer.writerow({'Case Number': k, 'Case Start State': final_state_list,
+                                     'Solution Found': solution_found, 'No. of moves': len(path),
+                                     'No. of Nodes opened': len(nodes_explored),
+                                     'Computing Time': str(round(t1 - t0, 3))+'s'})
+                    csvfile.close()
+            except TypeError:
+                print(f"Unable to solve the puzzle for State Number {k} within 30 moves")
+                solution_found = 0
+                t1 = pc()
+                print(f'Depth: Exceeded 30 moves runtime:{round(t1 - t0, 3)} s')
+                print(f"Nodes Explored: {len(nodes_explored)}")
+                print()
+                with open(filename, "a", newline='') as csvfile:
+                    fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
+                                  'No. of Nodes opened', 'Computing Time']
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    is_file_empty = os.stat(filename).st_size
+                    if is_file_empty == 0:
+                        writer.writeheader()
+                    writer.writerow({'Case Number': k, 'Case Start State': final_state_list,
+                                     'Solution Found': solution_found, 'No. of moves': gn,
+                                     'No. of Nodes opened': len(nodes_explored),
+                                     'Computing Time': str(round(t1 - t0, 3))+'s'})
+                    csvfile.close()
+
+
+clear_csv("IDASTAR_output.csv")
+#solve_puzzle(start_state=[2, 2, [[4, 7, 5], [3, 8, 1], [6, 2, 0]]],
+#             goal_state=[1, 1, [[1, 2, 3], [8, 0, 4], [7, 6, 5]]])
+solve_puzzle()
