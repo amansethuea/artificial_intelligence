@@ -1,3 +1,4 @@
+import copy
 from time import perf_counter as pc
 import math
 import numpy as np
@@ -154,8 +155,12 @@ def solve_attempt(initial_state):
 
 
 def random_states_generator(n):
+    global initial_state
+
     # Seed 755 as per my last 3 numbers of my student ID
     random.seed(755)
+    state = copy.deepcopy(initial_state)
+    deep_copy_state = state
     for _ in range(1, 11):
         final_list = []
         # Shuffling the initial state list 10 times in a loop
@@ -168,6 +173,9 @@ def random_states_generator(n):
                 yield final_list
             else:
                 pass
+        copy_state = copy.deepcopy(deep_copy_state)
+        copied_state = copy_state
+        initial_state = copied_state
 
 
 def get_random_states():

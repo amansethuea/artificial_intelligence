@@ -1,3 +1,4 @@
+import copy
 import math
 import os
 import random
@@ -26,6 +27,8 @@ class Iddfs(object):
     def random_states_generator(self, n):
         # Seed 755 as per my last 3 numbers of my student ID
         random.seed(755)
+        state = copy.deepcopy(self.initial_state)
+        deep_copy_state = state
         for _ in range(1, 11):
             final_list = []
             # Shuffling the initial state list 10 times in a loop
@@ -38,6 +41,9 @@ class Iddfs(object):
                     yield final_list
                 else:
                     pass
+            copy_state = copy.deepcopy(deep_copy_state)
+            copied_state = copy_state
+            self.initial_state = copied_state
 
     def get_random_states(self):
         # Gets the final list from function above
@@ -294,6 +300,7 @@ class Iddfs(object):
 if __name__ == "__main__":
     obj = Iddfs()
     obj.clear_csv("IDDFS_output.csv")
-    #obj.solve_puzzle(start_state=[2, 2, [[4, 7, 5], [3, 8, 1], [6, 2, 0]]],
+    # obj.get_random_states()
+    # obj.solve_puzzle(start_state=[2, 2, [[4, 7, 5], [3, 8, 1], [6, 2, 0]]],
     #                 goal_state=[1, 1, [[1, 2, 3], [8, 0, 4], [7, 6, 5]]])
     obj.solve_puzzle()
