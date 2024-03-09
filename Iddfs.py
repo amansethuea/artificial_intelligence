@@ -23,10 +23,12 @@ class Iddfs(object):
         self.RIGHT = 'right'
         self.nodes_explored = []
         self.solution_found = 0
+        self.seed = 755
 
     def random_states_generator(self, n):
         # Seed 755 as per my last 3 numbers of my student ID
-        random.seed(755)
+        random.seed(self.seed)
+        # Deep copy initial state
         state = copy.deepcopy(self.initial_state)
         deep_copy_state = state
         for _ in range(1, 11):
@@ -41,6 +43,9 @@ class Iddfs(object):
                     yield final_list
                 else:
                     pass
+            # Mechanism to reset the initial state to original figures at the end of every iteration
+            """ This is because if not done, then the random.shuffle will shuffle the generated 
+                random state instead of the original state """
             copy_state = copy.deepcopy(deep_copy_state)
             copied_state = copy_state
             self.initial_state = copied_state
@@ -233,9 +238,8 @@ class Iddfs(object):
             # Calculates total computation time
             print('Run in', round(time.time() - start_time, 3), 'seconds.')
             # Writes the data into csv as per assessment brief
-            self.write_csv_data(file_name, 1, start_state, self.solution_found, moves,
-                                int(math.sqrt(len(self.nodes_explored))),
-                                str(round(time.time() - start_time, 3)) + "s")
+            self.write_csv_data(file_name, self.seed, 1, start_state, self.solution_found, moves,
+                                int(self.nodes_explored), str(round(time.time() - start_time, 3)) + "s")
         else:
             # Runs as per assessment brief for 10 random states as per seed 755
             start_states_dict = self.get_random_states()
@@ -271,21 +275,20 @@ class Iddfs(object):
                 # Calculates total computation time
                 print('Run in', round(time.time() - start_time, 3), 'seconds.')
                 # Writes the data into csv as per assessment brief
-                self.write_csv_data(file_name, k, final_state_list, self.solution_found, moves,
-                                    int(math.sqrt(len(self.nodes_explored))),
-                                    str(round(time.time() - start_time, 3)) + "s")
+                self.write_csv_data(file_name, self.seed, k, final_state_list, self.solution_found, moves,
+                                    self.nodes_explored, str(round(time.time() - start_time, 3)) + "s")
 
     # Writes data into a csv as asked in assessment brief
-    def write_csv_data(self, file_name, case_no, case_start_state, solution_found, no_of_moves, nodes_opened,
+    def write_csv_data(self, file_name, seed, case_no, case_start_state, solution_found, no_of_moves, nodes_opened,
                        computing_time):
         with open(file_name, 'a', newline='') as csvfile:
-            fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves', 'No. of Nodes opened',
-                          'Computing Time']
+            fieldnames = ['Seed', 'Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
+                          'No. of Nodes opened', 'Computing Time']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             is_file_empty = os.stat(file_name).st_size
             if is_file_empty == 0:
                 writer.writeheader()
-            writer.writerow({'Case Number': case_no, 'Case Start State': case_start_state,
+            writer.writerow({'Seed': seed, 'Case Number': case_no, 'Case Start State': case_start_state,
                              'Solution Found': solution_found, 'No. of moves': no_of_moves,
                              'No. of Nodes opened': nodes_opened, 'Computing Time': computing_time})
             csvfile.close()

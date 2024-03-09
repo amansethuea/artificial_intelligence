@@ -22,7 +22,7 @@ initial_state = list(reversed(range(no_of_tiles + 1)))
 g_state = [1, 1, [[1, 2, 3], [8, 0, 4], [7, 6, 5]]]
 # Getting the square room of N in N-tile
 matrix = int(math.sqrt(no_of_tiles + 1))
-
+seed = 755
 
 class IDAStar:
     # Constructor function
@@ -156,9 +156,11 @@ def solve_attempt(initial_state):
 
 def random_states_generator(n):
     global initial_state
+    global seed
 
     # Seed 755 as per my last 3 numbers of my student ID
-    random.seed(755)
+    random.seed(seed)
+    # Deep copy initial state
     state = copy.deepcopy(initial_state)
     deep_copy_state = state
     for _ in range(1, 11):
@@ -173,6 +175,9 @@ def random_states_generator(n):
                 yield final_list
             else:
                 pass
+        # Mechanism to reset the initial state to original figures at the end of every iteration
+        """ This is because if not done, then the random.shuffle will shuffle the generated 
+        random state instead of the original state """
         copy_state = copy.deepcopy(deep_copy_state)
         copied_state = copy_state
         initial_state = copied_state
@@ -205,6 +210,7 @@ def solve_puzzle(start_state=dict, goal_state=None, filename="IDASTAR_output.csv
     global g_state
     global nodes_explored
     global solution_found
+    global seed
 
     # This condition is to solve only one puzzle passed in the argument in __main__
     if isinstance(start_state, list):
@@ -232,14 +238,14 @@ def solve_puzzle(start_state=dict, goal_state=None, filename="IDASTAR_output.csv
             # Writes the data as per assessment brief in csv file
             with open(filename, "a", newline='') as csvfile:
                 # CSV headers
-                fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
+                fieldnames = ['Seed', 'Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
                               'No. of Nodes opened', 'Computing Time']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 is_file_empty = os.stat(filename).st_size
                 if is_file_empty == 0:
                     writer.writeheader()
                 # Writes data
-                writer.writerow({'Case Number': 1, 'Case Start State': start_state[2],
+                writer.writerow({'Seed': seed, 'Case Number': 1, 'Case Start State': start_state[2],
                                  'Solution Found': solution_found, 'No. of moves': len(path),
                                  'No. of Nodes opened': len(nodes_explored),
                                  'Computing Time': str(round(t1 - t0, 3)) + 's'})
@@ -253,13 +259,13 @@ def solve_puzzle(start_state=dict, goal_state=None, filename="IDASTAR_output.csv
             print(f"Nodes Explored: {len(nodes_explored)}")
             print()
             with open(filename, "a", newline='') as csvfile:
-                fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
+                fieldnames = ['Seed', 'Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
                               'No. of Nodes opened', 'Computing Time']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 is_file_empty = os.stat(filename).st_size
                 if is_file_empty == 0:
                     writer.writeheader()
-                writer.writerow({'Case Number': 1, 'Case Start State': start_state[2],
+                writer.writerow({'Seed': seed, 'Case Number': 1, 'Case Start State': start_state[2],
                                  'Solution Found': solution_found, 'No. of moves': gn,
                                  'No. of Nodes opened': len(nodes_explored),
                                  'Computing Time': str(round(t1 - t0, 3)) + 's'})
@@ -300,14 +306,14 @@ def solve_puzzle(start_state=dict, goal_state=None, filename="IDASTAR_output.csv
                 print()
                 with open(filename, "a", newline='') as csvfile:
                     # CSV headers
-                    fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
+                    fieldnames = ['Seed', 'Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
                                   'No. of Nodes opened', 'Computing Time']
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                     is_file_empty = os.stat(filename).st_size
                     if is_file_empty == 0:
                         writer.writeheader()
                     # Writes data as per brief
-                    writer.writerow({'Case Number': k, 'Case Start State': final_state_list,
+                    writer.writerow({'Seed': seed, 'Case Number': k, 'Case Start State': final_state_list,
                                      'Solution Found': solution_found, 'No. of moves': len(path),
                                      'No. of Nodes opened': len(nodes_explored),
                                      'Computing Time': str(round(t1 - t0, 3))+'s'})
@@ -321,13 +327,13 @@ def solve_puzzle(start_state=dict, goal_state=None, filename="IDASTAR_output.csv
                 print(f"Nodes Explored: {len(nodes_explored)}")
                 print()
                 with open(filename, "a", newline='') as csvfile:
-                    fieldnames = ['Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
+                    fieldnames = ['Seed', 'Case Number', 'Case Start State', 'Solution Found', 'No. of moves',
                                   'No. of Nodes opened', 'Computing Time']
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                     is_file_empty = os.stat(filename).st_size
                     if is_file_empty == 0:
                         writer.writeheader()
-                    writer.writerow({'Case Number': k, 'Case Start State': final_state_list,
+                    writer.writerow({'Seed': seed, 'Case Number': k, 'Case Start State': final_state_list,
                                      'Solution Found': solution_found, 'No. of moves': gn,
                                      'No. of Nodes opened': len(nodes_explored),
                                      'Computing Time': str(round(t1 - t0, 3))+'s'})
