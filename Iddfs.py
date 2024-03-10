@@ -239,7 +239,7 @@ class Iddfs(object):
             print('Run in', round(time.time() - start_time, 3), 'seconds.')
             # Writes the data into csv as per assessment brief
             self.write_csv_data(file_name, self.seed, 1, start_state, self.solution_found, moves,
-                                int(self.nodes_explored), str(round(time.time() - start_time, 3)) + "s")
+                                len(self.nodes_explored), str(round(time.time() - start_time, 3)) + "s")
         else:
             # Runs as per assessment brief for 10 random states as per seed 755
             start_states_dict = self.get_random_states()
@@ -276,7 +276,7 @@ class Iddfs(object):
                 print('Run in', round(time.time() - start_time, 3), 'seconds.')
                 # Writes the data into csv as per assessment brief
                 self.write_csv_data(file_name, self.seed, k, final_state_list, self.solution_found, moves,
-                                    self.nodes_explored, str(round(time.time() - start_time, 3)) + "s")
+                                    len(self.nodes_explored), str(round(time.time() - start_time, 3)) + "s")
 
     # Writes data into a csv as asked in assessment brief
     def write_csv_data(self, file_name, seed, case_no, case_start_state, solution_found, no_of_moves, nodes_opened,
