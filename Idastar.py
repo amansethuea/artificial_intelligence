@@ -9,20 +9,21 @@ import os
 
 
 # Global variables
-GOAL_STATE = [[]]
-GLOBAL_STATE_DICT = {}
 N = 0
 nodes_explored = []
+GOAL_STATE = [[]]
 solution_found = 0
 gn = 0
 
 no_of_tiles = 8
+GLOBAL_STATE_DICT = {}
 # Reversing the initial state in a list starting from 8,7,6....0
 initial_state = list(reversed(range(no_of_tiles + 1)))
 g_state = [1, 1, [[1, 2, 3], [8, 0, 4], [7, 6, 5]]]
 # Getting the square room of N in N-tile
 matrix = int(math.sqrt(no_of_tiles + 1))
 seed = 755
+
 
 class IDAStar:
     # Constructor function
@@ -31,25 +32,21 @@ class IDAStar:
         self.heuristic = manhattan
         self.zero_pos = zero_pos
 
-    # Returns string representation of the state and manhattan distance
-    def __str__(self):
+    # hash returns integer converted to bytes
+    def __hash__(self):
+        return hash(self.state.tobytes())
+
+    # Representation of __str__ on console
+    def __repr__(self):
         return f"state=\n{self.state}\nheuristic={int(self.heuristic)}"
 
     # equality method to compare the states with other states
     def __eq__(self, other):
         return np.array_equal(self.state, other.state)
 
-    # Representation of __str__ on console
-    def __repr__(self):
+    # Returns string representation of the state and manhattan distance
+    def __str__(self):
         return f"state=\n{self.state}\nheuristic={int(self.heuristic)}"
-
-    # hash returns integer converted to bytes
-    def __hash__(self):
-        return hash(self.state.tobytes())
-
-
-def custom_sort(node):
-    return node.heuristic
 
 
 def next_nodes(node):
@@ -77,9 +74,16 @@ def next_nodes(node):
     return sorted(state_nodes, key=custom_sort)
 
 
+def custom_sort(node):
+    return node.heuristic
+
+
 # Calculates the manhattan distance
 def calculate_manhattan_distance(x, y):
-    return abs(y[0] - x[0]) + abs(y[1] - x[1])
+    diff_y_x = abs(y[0] - x[0])
+    diff_x_y = abs(y[1] - x[1])
+    dist = diff_y_x + diff_x_y
+    return dist
 
 
 # Calculates h(n) heuristic cost
